@@ -32,6 +32,7 @@ morgan.token('dataPost', function getId (req) {
 
 app.use(express.json())
 app.use(cors())
+app.use(express.static('build'))
 app.use(morgan(':method :url :status - :response-time ms :dataPost'))
 
 app.get('/', (req, res) => 
