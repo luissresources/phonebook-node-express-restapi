@@ -8,3 +8,22 @@ Content-Type: application/json
   "name": "alfred",
   "number": 320
 }
+
+###
+GET https://whispering-chamber-95213.herokuapp.com/api/persons
+
+###
+
+POST https://whispering-chamber-95213.herokuapp.com/api/persons
+Content-Type: application/json
+
+{
+"id": 5,
+"name": "Albert Einstein",
+"number": 350,
+"key": 5
+}
+
+
+###
+DELETE https://whispering-chamber-95213.herokuapp.com/api/persons/5
