@@ -1,29 +1,10 @@
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person')
+const { response } = require('express')
 
 const app = express()
-
-let persons = [
-  {
-    id: 1,
-    name: 'Cristina Estrada',
-    number: 322,
-    key: 1
-  },
-  {
-    id: 2,
-    name: 'Sebastian Sanchez',
-    number: 320,
-    key: 2
-  },
-  {
-    id: 3,
-    name: 'Luis Sanchez',
-    number: 350,
-    key:3
-  }
-]
 
 morgan.token('dataPost', function getId (req) {
   const body = JSON.stringify(req.body)
@@ -35,24 +16,27 @@ app.use(cors())
 app.use(express.static('build'))
 app.use(morgan(':method :url :status - :response-time ms :dataPost'))
 
-app.get('/', (req, res) => 
-  res.send('hello, world!')
-)
-
 app.get('/api/persons',(request, response) => {
-  response.json(persons)
+  Person.find({})
+    .then(result => {
+      response.json(result)
+    })
 })
 
 app.get('/api/persons/:id',(request, response) => {
-  const id = Number(request.params.id)
-  const person = persons.find(p => p.id === id)
-  person
-    ? response.status(200).json(person)
-    : response.status(404).json({
-      error: 'person not found'
-    })  
+  Person.findById(request.params.id)
+    .then(person => {
+      if(person){
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => {
+      response.status(500).end()
+    })
 })
-
+|
 app.get('/info', (request, response) => {
   const quantityPersons = persons.length
   const requestDate = new Date()
@@ -60,60 +44,90 @@ app.get('/info', (request, response) => {
   response.status(200).send(txt)
 })
 
-app.post('/api/persons', (req, res) => {
-  const body = req.body
-  const name = req.body.name
-  const number = req.body.number
-  const key = req.body.key
-  const id = req.body.id
+app.post('/api/persons', (request, response) => {
+  const body = request.body
+  const name = request.body.name
+  const number = request.body.number
+  const key = request.body.key
+  const id = request.body.id
 
   if(!name && !number){
-    return res.status(400).json({
+    return response.status(400).json({
       error: 'missing content'
     })
   }
 
   if(!name) {
-    return res.status(400).json({
+    return response.status(400).json({
       error: `name not found`
     })
   } 
   
   if (!number) {
-    return res.status(400).json({
+    return response.status(400).json({
       error: `number not found`
     })
   }
 
-  const valName = persons.some(p => p.name.toLowerCase() === name.toLowerCase())
+  Person.find({})
+    .then(persons => {
 
-  if(valName) {
-    return res.status(400).json({
-       error: `name has already been added`
+      const maxId = Math.max(...persons.map(person => person.id)) + 1
+      const maxKey = Math.max(...persons.map(person => person.key)) + 1
+      // created object user 
+      const person = new Person({
+        _id : maxId,
+        key : maxKey,
+        name : name,
+        number: number
+      })
+
+      console.log(person._id,person.key, person.name, person.number)
+
+      person.save()
+        .then(result => {
+          response.status(201).send({
+            message: 'User created',
+            result
+          })
+        })
+        .catch(error => {
+          response.status(400).send({
+            error: 'User not created'
+          })
+        })
     })
-  }
-
-  const newPerson = {
-    id : id,
-    name : name, 
-    number : number,
-    key: key
-  }
-
-  // console.log('backend ',newPerson.id,' ',newPerson.name,' ',newPerson.number,' ',newPerson.key)
-
-  // console.log(JSON.stringify(newPerson))
-
-  persons = [...persons, newPerson]
-
-  res.status(201).json(newPerson)
+    .catch(error => {
+      console.log('error in Note.find for maxId')
+    })
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-  const id = Number(req.params.id)
+app.put('/api/persons/:id', (request, response) => {
+  console.log(request.body)
+  Person.updateOne({_id : request.params.id}, {$set: {number: request.body.number}})
+    .then(result => {
+      response.status(200).send({
+        message: 'User update'
+      })
+    })
+    .catch(error => {
+      response.status(400).send({
+        error : 'User not update',
+        error
+      })
+    })
+})
 
-  persons = persons.filter(p => p.id !== id)
-  res.status(204).end()
+app.delete('/api/persons/:id', (request, response) => {
+  Person.deleteOne({_id : request.params.id})
+    .then(result => {
+      response.status(204).send({
+        message: 'Content delete'
+      })
+    })
+    .catch(error => {
+      response.status(404).end()
+    })
 })
 
 
