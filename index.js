@@ -80,11 +80,9 @@ app.post('/api/persons', (request, response,next) => {
   Person.find({})
     .then(persons => {
       const maxId = persons.length === 0 ? 1 : persons.length === 1 ? 2 : Math.max(...persons.map(person => person.id)) + 1
-      const maxKey = persons.length === 0 ? 1 : persons.length === 1 ? 2 : Math.max(...persons.map(person => person.key)) + 1
       // created object user 
       const person = new Person({
         _id : maxId,
-        key : maxKey,
         name : name,
         number: number
       })
