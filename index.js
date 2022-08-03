@@ -43,13 +43,16 @@ app.get('/api/persons/:id',(request, response, next) => {
 })
 |
 app.get('/info', (request, response) => {
-  const quantityPersons = persons.length
-  const requestDate = new Date()
-  const txt = `<p>Phonebook has info for ${quantityPersons} people</p><p>${requestDate}</p>`
-  response.status(200).send(txt)
+  Person.find({})
+    .then(persons => {
+      const quantityPersons = persons.length
+      const requestDate = new Date()
+      const txt = `<p>Phonebook has info for ${quantityPersons} people</p><p>${requestDate}</p>`
+      response.status(200).send(txt)
+    })
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response,next) => {
   const body = request.body
   const name = request.body.name
   const number = request.body.number
@@ -102,7 +105,7 @@ app.post('/api/persons', (request, response) => {
         })
     })
     .catch(error => {
-      console.log('error in Note.find for maxId')
+      next(error)
     })
 })
 
@@ -111,7 +114,8 @@ app.put('/api/persons/:id', (request, response) => {
   Person.updateOne({_id : request.params.id}, {$set: {number: request.body.number}})
     .then(result => {
       response.status(200).send({
-        message: 'User update'
+        message: 'User update',
+        result
       })
     })
     .catch(error => {
