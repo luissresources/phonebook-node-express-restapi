@@ -11,9 +11,9 @@ morgan.token('dataPost', function getId (req) {
   return body
 })
 
+app.use(express.static('build'))
 app.use(express.json())
 app.use(cors())
-app.use(express.static('build'))
 app.use(morgan(':method :url :status - :response-time ms :dataPost'))
 
 app.get('/api/persons',(request, response) => {
@@ -23,7 +23,7 @@ app.get('/api/persons',(request, response) => {
     })
 })
 
-app.get('/api/persons/:id',(request, response) => {
+app.get('/api/persons/:id',(request, response, next) => {
   Person.findById(request.params.id)
     .then(person => {
       if(person){
@@ -33,7 +33,12 @@ app.get('/api/persons/:id',(request, response) => {
       }
     })
     .catch(error => {
-      response.status(500).end()
+      // WAITING NEW IMPLEMENTATION
+      // console.log({error})
+      // response.status(400).send({
+      //   error: 'malformatted id'
+      // })
+      next(error)
     })
 })
 |
@@ -71,9 +76,8 @@ app.post('/api/persons', (request, response) => {
 
   Person.find({})
     .then(persons => {
-
-      const maxId = Math.max(...persons.map(person => person.id)) + 1
-      const maxKey = Math.max(...persons.map(person => person.key)) + 1
+      const maxId = persons.length === 0 ? 1 : persons.length === 1 ? 2 : Math.max(...persons.map(person => person.id)) + 1
+      const maxKey = persons.length === 0 ? 1 : persons.length === 1 ? 2 : Math.max(...persons.map(person => person.key)) + 1
       // created object user 
       const person = new Person({
         _id : maxId,
@@ -130,6 +134,24 @@ app.delete('/api/persons/:id', (request, response) => {
     })
 })
 
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+  if(error.name === 'CastError') {
+    return response.status(400).send({
+      error: 'mailformatted id'
+    })
+  }
+
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
