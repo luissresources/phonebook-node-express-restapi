@@ -1,15 +1,15 @@
 GET http://localhost:3001/api/persons
 
 ###
-GET http://localhost:3001/api/persons/18
+GET http://localhost:3001/api/persons/2
 
 ###
 POST http://localhost:3001/api/persons HTTP/1.1
 Content-Type: application/json
 
 {
-  "name": "al",
-  "number": 320502434523
+  "name": "alfred",
+  "number": 3205013131
 }
 
 ###
@@ -17,11 +17,11 @@ PUT http://localhost:3001/api/persons/1
 Content-Type: application/json
 
 {
-  "name" : "rogelio",
-  "number" : 331
+  "name" : "luis",
+  "number" : 3311341412
 }
 ###
-DELETE http://localhost:3001/api/persons/1
+DELETE http://localhost:3001/api/persons/3
 
 ###
 GET https://whispering-chamber-95213.herokuapp.com/api/persons
