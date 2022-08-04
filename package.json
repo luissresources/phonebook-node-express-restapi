@@ -10,7 +10,8 @@
     "build:ui": "rm -rf build && cd ../frontend && rm -rf build && npm run build --prod && cp -r build ../backend",
     "deploy": "git push heroku main",
     "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && npm run deploy",
-    "logs:prod": "heroku logs --tail"
+    "logs:prod": "heroku logs --tail",
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   },
   "homepage": "https://github.com/luissresources/phonebook-node-express-restapi#readme",
   "devDependencies": {
+    "eslint": "^8.21.0",
     "nodemon": "^2.0.19"
   },
   "dependencies": {

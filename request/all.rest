@@ -9,19 +9,19 @@ Content-Type: application/json
 
 {
   "name": "alfred",
-  "number": 3205013131
+  "number": 555555555
 }
 
 ###
-PUT http://localhost:3001/api/persons/1
+PUT http://localhost:3001/api/persons/4
 Content-Type: application/json
 
 {
-  "name" : "luis",
-  "number" : 3311341412
+  "name" : "alfred",
+  "number" : 111111111
 }
 ###
-DELETE http://localhost:3001/api/persons/3
+DELETE http://localhost:3001/api/persons/4
 
 ###
 GET https://whispering-chamber-95213.herokuapp.com/api/persons

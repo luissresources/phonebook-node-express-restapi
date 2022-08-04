@@ -26,16 +26,16 @@ if(process.argv.length === 3) {
       console.log('phonebook:')
       persons.forEach(person => {
         console.log(`${person.name} ${person.number}`)
+      })
+      mongoose.connection.close()
     })
-    mongoose.connection.close()
-  })
 } else {
   // Create user
   const person = new Person({
     name: process.argv[3],
     number: process.argv[4]
   })
-  
+
   person.save().then(result => {
     console.log(`add ${result.name} number ${result.number} to phonebook`)
     mongoose.connection.close()

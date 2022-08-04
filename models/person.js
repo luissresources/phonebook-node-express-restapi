@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const uniqueValidator = require('mongoose-unique-validator');
+const uniqueValidator = require('mongoose-unique-validator')
 require('dotenv').config()
 
 // create url
@@ -7,18 +7,18 @@ const password = process.env.DB_PASSWORD
 const url = `mongodb+srv://luissresources:${password}@cluster0.fp2el.mongodb.net/phonebookDB?retryWrites=true&w=majority`
 
 mongoose.connect(url)
-  .then(result => {
+  .then( () => {
     console.log('Connect to DB')
   })
-  .catch(error => {
+  .catch( () => {
     console.log('connection error')
   })
 
 // Schema
 const PersonSchema = new mongoose.Schema({
-  _id: {type: String, required: true },
-  name: {type: String, minlength:3, required: true, unique: true},
-  number: {type: Number, min:10000000, required: true}
+  _id: { type: String, required: true },
+  name: { type: String, minlength:3, required: true, unique: true },
+  number: { type: Number, min:10000000, required: true }
 })
 
 PersonSchema.plugin(uniqueValidator)
