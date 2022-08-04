@@ -18,64 +18,28 @@ app.use(morgan(':method :url :status - :response-time ms :dataPost'))
 
 app.get('/api/persons',(request, response) => {
   Person.find({})
-    .then(result => {
-      response.json(result)
-    })
+    .then(persons => response.json(persons))
 })
 
 app.get('/api/persons/:id',(request, response, next) => {
   Person.findById(request.params.id)
     .then(person => {
-      if(person){
-        response.json(person)
-      } else {
-        response.status(404).end()
-      }
+      person
+        ? response.json(person)
+        : response.status(404).end()
     })
-    .catch(error => {
-      // WAITING NEW IMPLEMENTATION
-      // console.log({error})
-      // response.status(400).send({
-      //   error: 'malformatted id'
-      // })
-      next(error)
-    })
+    .catch(error => next(error))
 })
 |
 app.get('/info', (request, response) => {
   Person.find({})
     .then(persons => {
-      const quantityPersons = persons.length
-      const requestDate = new Date()
-      const txt = `<p>Phonebook has info for ${quantityPersons} people</p><p>${requestDate}</p>`
+      const txt = `<p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p>`
       response.status(200).send(txt)
     })
 })
 
 app.post('/api/persons', (request, response,next) => {
-  const body = request.body
-  const name = request.body.name
-  const number = request.body.number
-  const key = request.body.key
-  const id = request.body.id
-
-  if(!name && !number){
-    return response.status(400).json({
-      error: 'missing content'
-    })
-  }
-
-  if(!name) {
-    return response.status(400).json({
-      error: `name not found`
-    })
-  } 
-  
-  if (!number) {
-    return response.status(400).json({
-      error: `number not found`
-    })
-  }
 
   Person.find({})
     .then(persons => {
@@ -83,57 +47,51 @@ app.post('/api/persons', (request, response,next) => {
       // created object user 
       const person = new Person({
         _id : maxId,
-        name : name,
-        number: number
+        name : request.body.name,
+        number: request.body.number
       })
 
-      console.log(person._id,person.key, person.name, person.number)
+      console.log(person._id, person.name, person.number)
 
       person.save()
-        .then(result => {
+        .then(personSaved => {
           response.status(201).send({
             message: 'User created',
-            result
+            personSaved
           })
         })
-        .catch(error => {
-          response.status(400).send({
-            error: 'User not created'
-          })
-        })
+        .catch(error => next(error))
     })
-    .catch(error => {
-      next(error)
-    })
-})
+    .catch(error => next(error))
+  })
 
-app.put('/api/persons/:id', (request, response) => {
+app.put('/api/persons/:id', (request, response, next) => {
   console.log(request.body)
-  Person.updateOne({_id : request.params.id}, {$set: {number: request.body.number}})
-    .then(result => {
-      response.status(200).send({
-        message: 'User update',
-        result
-      })
+  Person.findOneAndUpdate({_id: request.params.id}, {number: request.body.number}, { runValidators: true })
+    .then(person => {
+      if (person === null){
+        response.status(400).send({
+          message: 'Update error'
+        })
+      } else {
+        response.status(200).send({
+          message: 'User update',
+          person
+        })
+      }
     })
-    .catch(error => {
-      response.status(400).send({
-        error : 'User not update',
-        error
-      })
-    })
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-  Person.deleteOne({_id : request.params.id})
-    .then(result => {
+  Person.findByIdAndDelete(request.params.id)
+    .then(personToDelete => {
       response.status(204).send({
-        message: 'Content delete'
+        message: 'Content delete',
+        personToDelete
       })
     })
-    .catch(error => {
-      response.status(404).end()
-    })
+    .catch(error => next(error))
 })
 
 const unknownEndpoint = (request, response) => {
@@ -148,6 +106,8 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({
       error: 'mailformatted id'
     })
+  } else if(error.name === 'ValidationError') {
+    return response.status(400).json({error: error.message})
   }
 
   next(error)
